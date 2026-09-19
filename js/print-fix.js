@@ -89,6 +89,9 @@
       'body.repPrint{--paper:#fff;--card:#fff;--ink:#1c171e;--muted:#5d5560;' +
       '--line:#cfc7c0;--soft:#F4F1ED;--band:#EAE3F0}' +
       'body.repPrint *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}' +
+      'body:not(.repPrint) .sheet,.sheet *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}' +
+      'body:not(.repPrint) .sheet .final{background:#E3DFED!important}' +
+      'body:not(.repPrint) .sheet .band,body:not(.repPrint) .sheet th,body:not(.repPrint) .sheet .bx h4{background:#B3A1C7!important}' +
       '@page{size:A4;margin:9mm}' +
       '@media print{' +
         'body.repPrint .card{break-inside:avoid}' +
@@ -135,5 +138,5 @@
   window.openPrintable = openPrintable;
 
   /* Add a marker so the page can be checked easily in DevTools. */
-  window.__BANQUET_PRINT_FIX__ = "1.0";
+  window.__BANQUET_PRINT_FIX__ = "1.1-color-match";
 })();

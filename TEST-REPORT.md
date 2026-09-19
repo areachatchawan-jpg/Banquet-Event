@@ -45,3 +45,9 @@ The Summary/Check reporting logic was not replaced. The existing report pipeline
 
 ## Files intentionally excluded
 Backup files such as `style.css.bak` and `wizard.js.bak` are not included in the final deployment package.
+
+
+## 2026-09-19 Color Match Update
+- BEO print/PDF section colors adjusted to match the supplied Queensland sample: main purple bands approximately #B3A1C7 and top final strip #E3DFED.
+- Print color preservation hardened with `-webkit-print-color-adjust: exact` / `print-color-adjust: exact`.
+- Cache-busting version updated to `20260919-beo-color2`.
