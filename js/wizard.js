@@ -133,50 +133,77 @@ function renderSend(){
       </div></div>`;
   }).join("");
 }
+function escPrint(v){
+  return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
 function sheetHTML(x){
-  const s=state[x.id];
-  const dayRows=x.days.map(d=>`<tr><td>${thDate(d.d)}</td><td>${d.time}</td><td>${d.room}</td>
-    <td>${x.guarantee} ${x.unit} · Set Up ${x.setup} ${x.unit}</td><td>${d.set||x.style}</td></tr>`).join("");
-  const box=(title,items,photos)=>`<div class="bx"><h4>${title}</h4>
-    <ul>${items.map(t=>`<li>${t}</li>`).join("")}</ul>
-    ${photos&&photos.length?`<div class="ph">${photos.map(p=>`<figure><img src="${p.src}"><figcaption>${p.cap}</figcaption></figure>`).join("")}</div>`:""}
-  </div>`;
-  const deptBoxes=x.depts.map(d=>box(d.n+(d.who?" : "+d.who:""), d.t, s.photos.filter(p=>p.dept===d.n))).join("");
-  const menuBoxes=x.days.map((d,di)=>d.menu==="ไม่มีอาหาร"?"":
-    box("เมนู "+thDate(d.d)+" — "+d.menu, (d.note?[d.note]:[]).concat(menuLines(x,di).map(t=>t.replace(/^\s+·\s/,""))))).join("");
-  const adjBoxes=(x.adj||[]).map(a=>box("ใบแก้ไข "+a.date+" — "+a.topic,
-    a.to.filter(t=>!a.from.includes(t)).map(t=>"เพิ่ม: "+t).concat(a.from.filter(t=>!a.to.includes(t)).map(t=>"ตัดออก: "+t)))).join("");
-  const progBox=x.prog.length? box("PROGRAM", x.prog.map(p=>p[0]+" — "+p[1])) : "";
-  const other=x.link? box("งานต่อเนื่อง", ["ใช้ร่วมกับใบสั่งงาน "+x.linkNo]) : "";
+  const s=state[x.id] || {photos:[]};
+  const eventDays = Array.isArray(x.days) ? x.days : [];
+  const dayRows = eventDays.map(d=>`<tr>
+    <td>${escPrint(thDate(d.d))}</td>
+    <td>${escPrint(d.time)}</td>
+    <td>${escPrint(d.room)}</td>
+    <td>${escPrint(x.guarantee)} ${escPrint(x.unit)}<br><span class="subprint">Set Up ${escPrint(x.setup)} ${escPrint(x.unit)}</span></td>
+    <td>${escPrint(d.set||x.style||"")}</td>
+  </tr>`).join("");
+
+  const box=(title,items,photos)=>`<section class="bx">
+    <h4>${escPrint(title)}</h4>
+    ${items && items.length ? `<ul>${items.map(t=>`<li>${escPrint(t)}</li>`).join("")}</ul>` : `<div class="bx-empty">—</div>`}
+    ${photos&&photos.length?`<div class="ph">
+      ${photos.map(p=>`<figure><img src="${p.src}" alt=""><figcaption>${escPrint(p.cap||"")}</figcaption></figure>`).join("")}
+    </div>`:""}
+  </section>`;
+
+  const deptBoxes=Array.isArray(x.depts)?x.depts.map(d=>box((d.n||"")+(d.who?" : "+d.who:""), d.t||[], s.photos.filter(p=>p.dept===d.n))).join(""):"";
+  const menuBoxes=eventDays.map((d,di)=>{
+    if(!d.menu || d.menu==="ไม่มีอาหาร") return "";
+    const lines=(menuLines(x,di)||[]).map(t=>String(t).replace(/^\s+·\s/,""));
+    const items=(d.note?[d.note]:[]).concat(lines);
+    return box("เมนู "+thDate(d.d)+" — "+d.menu, items);
+  }).join("");
+  const adjBoxes=(x.adj||[]).map(a=>{
+    const items=(a.to||[]).filter(t=>!(a.from||[]).includes(t)).map(t=>"เพิ่ม: "+t)
+      .concat((a.from||[]).filter(t=>!(a.to||[]).includes(t)).map(t=>"ตัดออก: "+t));
+    return box("ใบแก้ไข "+(a.date||"")+" — "+(a.topic||""), items);
+  }).join("");
+  const progBox=x.prog&&x.prog.length ? box("PROGRAM", x.prog.map(p=>String(p[0]||"")+" — "+String(p[1]||""))) : "";
+  const other=x.link ? box("งานต่อเนื่อง", ["ใช้ร่วมกับใบสั่งงาน "+x.linkNo]) : "";
   let boxes=deptBoxes+progBox+adjBoxes+menuBoxes+other;
   const n=(boxes.match(/class="bx"/g)||[]).length;
-  if(n%2) boxes+=`<div class="bx"></div>`;
-  return `<div class="final">${x.doc==="Final"?"Final Function":"ร่าง Function"}</div>
-  <div class="top">
-    <div class="l"><b>BANQUET EVENT ORDER</b>FUNCTION NO : ${x.no}<br>PAGE 1 / 1</div>
-    <div class="c"><img src="${LOGO[x.hotel]}" alt=""></div>
-    <div class="r">FUNCTION ${new Date().getDate()}/${new Date().getMonth()+1}/${new Date().getFullYear()}<br>
-      <span style="color:#111;font-weight:400">${x.status}</span></div>
-  </div>
-  <div class="band">DATE OF EVENT : ${dateLabel(x)} — ${x.kind.toUpperCase()}</div>
-  <div class="info">
-    <div><b>COMPANY :</b> ${x.company}</div>
-    <div><b>CONTACT :</b> ${x.contact} &nbsp;&nbsp; <b>PHONE :</b> ${x.phone}</div>
-    <div><b>งาน :</b> ${x.title}</div>
-  </div>
-  <table><thead><tr><th>Date</th><th>Time</th><th>Function Room</th><th>Guarantee</th><th>Set Up</th></tr></thead>
-    <tbody>${dayRows}</tbody></table>
-  ${canMoney()?`<div class="price"><b>PRICE :</b> ${x.rev.map(r=>r.n+" "+baht(r.price)+" x "+r.qty+(r.times>1?" x "+r.times+" ครั้ง":"")+" = "+baht(r.price*r.qty*(r.times||1))+" บาท").join(" / ")}</div>
-  <div class="price"><b>PAYMENT :</b> ยอดรวม ${baht(total(x))} บาท · รับแล้ว ${received(x)?baht(received(x)):"—"} บาท · คงเหลือ ${baht(total(x)-received(x))} บาท</div>`:""}
-  <div class="cols">${boxes}</div>
-  <div class="sign"><div>SALES IN CHARGE : ${x.sales}</div><div>EVENT : ${x.event}</div>
-    <div>CHIEF ACCOUNTANT</div><div>APPROVED BY : ${x.approve}</div></div>`;
+  if(n%2) boxes+=`<section class="bx bx-blank" aria-hidden="true"></section>`;
+
+  const priceHtml=canMoney() ? `
+    <div class="price"><b>PRICE :</b> ${x.rev.map(r=>escPrint(r.n)+" "+baht(r.price)+" x "+r.qty+(r.times>1?" x "+r.times+" ครั้ง":"")+" = "+baht(r.price*r.qty*(r.times||1))+" บาท").join(" / ")}</div>
+    <div class="price"><b>PAYMENT :</b> ยอดรวม ${baht(total(x))} บาท · รับแล้ว ${received(x)?baht(received(x)):"—"} บาท · คงเหลือ ${baht(total(x)-received(x))}</div>` : "";
+
+  return `<article class="print-sheet">
+    <div class="final">${x.doc==="Final"?"Final Function":"ร่าง Function"}</div>
+    <header class="top">
+      <div class="l"><b>BANQUET EVENT ORDER</b>FUNCTION NO : ${escPrint(x.no)}</div>
+      <div class="c"><img src="${LOGO[x.hotel]}" alt="${escPrint(HOTELNAME[x.hotel]||"")}"></div>
+      <div class="r">FUNCTION ${escPrint(new Date().getDate()+"/"+(new Date().getMonth()+1)+"/"+new Date().getFullYear())}<br><span>${escPrint(x.status||"")}</span></div>
+    </header>
+    <div class="band">DATE OF EVENT : ${escPrint(dateLabel(x))} — ${escPrint(String(x.kind||"").toUpperCase())}</div>
+    <div class="info">
+      <div><b>COMPANY :</b> ${escPrint(x.company)}</div>
+      <div><b>CONTACT :</b> ${escPrint(x.contact)} &nbsp;&nbsp; <b>PHONE :</b> ${escPrint(x.phone)}</div>
+      <div><b>งาน :</b> ${escPrint(x.title)}</div>
+    </div>
+    <table class="daytable"><thead><tr><th>Date</th><th>Time</th><th>Function Room</th><th>Guarantee</th><th>Set Up</th></tr></thead>
+      <tbody>${dayRows}</tbody></table>
+    ${priceHtml}
+    <div class="cols">${boxes}</div>
+    <footer class="sign"><div>SALES IN CHARGE : ${escPrint(x.sales)}</div><div>EVENT : ${escPrint(x.event)}</div>
+      <div>CHIEF ACCOUNTANT</div><div>APPROVED BY : ${escPrint(x.approve)}</div></footer>
+  </article>`;
 }
 function doPrint(){
   const x=f(); if(!x) return;
   document.getElementById("sheet").innerHTML=sheetHTML(x);
   go("sheet");
 }
+
 
 /* ---------------- add (wizard) ---------------- */
 const ROOMS={
