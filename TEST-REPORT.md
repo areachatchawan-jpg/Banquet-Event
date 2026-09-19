@@ -1,33 +1,47 @@
-# Banquet & Event — Final Test Report
+# Banquet & Event — Final QA Report
 
-## Build scope
-- Queensland + Baiyoke Sky
-- Single add-event action on the main Event List page
-- Event-specific menu overrides for Chinese set menus and buffet menus
-- Photo upload and photo deletion with confirmation
-- Supabase persistence via `be_functions` and `be_settings`
-- Role-based access: Admin / Sales / Department
+## Scope
+Final local QA pass for Queensland Hotel Bangkok + Baiyoke Sky, focused on event creation, hotel separation, menu editing, photo deletion, BEO print/PDF, and Summary/Check print.
 
-## Automated checks completed
-- JavaScript syntax check: PASS for all JS files
-- Local asset/reference check: PASS for all local CSS/JS references
-- HTML duplicate ID check: PASS
-- Inline handler reference check: PASS
-- Main Event List add-event button count: PASS (1)
-- Monthly duplicate add-event buttons removed: PASS
-- Photo delete function exists and filters the event photo state: PASS
-- Photo deletion triggers `autoSync()`: PASS
-- Lightbox delete action exists: PASS
-- Database empty-table guard clears bundled sample events after a successful empty query: PASS
-- Sales hotel guard: PASS
-- Master Menu vs Event Menu override separation: PASS by source-level verification
+## Automated / browser smoke tests
+- Main "เพิ่มงาน" button visible: **PASS**
+- Duplicate visible main add buttons: **PASS — 1 visible main button**
+- Add-event default hotel: **PASS — Queensland**
+- Queensland room options: **PASS — 10**
+- Baiyoke Sky room options: **PASS — 8**
+- Chinese set menu per-event edit: **PASS**
+- Buffet menu per-event edit: **PASS**
+- Master menu editor present: **PASS**
+- Image delete: **PASS — before 1 / after 0**
+- BEO title rendered: **PASS — BANQUET EVENT ORDER**
+- Queensland BEO hotel identity: **PASS**
+- Baiyoke Sky BEO hotel identity: **PASS**
+- BEO print header visible under print CSS: **PASS**
+- Summary report cards: **PASS — 12 sections/cards detected**
+- Page JavaScript errors during smoke test: **PASS — 0 errors**
 
-## Important production behavior
-1. `index.html` is the only main entry point at repository root.
-2. `＋ เพิ่มงาน` appears once on the main Event List page. Admin's separate settings page may contain its own add button by design.
-3. Event photo deletion removes the photo from the event state and triggers database synchronization.
-4. A successful empty `be_functions` query no longer resurrects bundled demo/sample jobs.
-5. Event-specific food edits are stored in `menuOverrides` and do not modify the Master Menu.
+## PDF checks
+- Queensland BEO: **PASS — 1 page, A4**
+- Baiyoke Sky BEO: **PASS — 1 page, A4**
+- Summary/Check report: **PASS — 7 pages, A4**
 
-## Verification limitation
-A full live-browser interaction test against the deployed GitHub Pages/Supabase environment could not be completed inside the isolated execution environment used for this build. The package was therefore validated with source-level, syntax, structural, and module-level checks; production data was not modified during testing.
+## BEO print corrections included
+- Hotel-specific header and logo
+- BANQUET EVENT ORDER / FUNCTION NO. / PAGE
+- Function date and status
+- Hotel strip (Queensland / Baiyoke Sky)
+- Company / Contact / Phone / Event rows
+- Date / Time / Function Room / Guarantee / Set Up table
+- PRICE / PAYMENT
+- Two-column department structure with full-width continuation rows when needed
+- Department title normalization for Banquet Arrangement, F&B Office / Entertainment, Bar Arrangement, Chef / Kitchen / Bakery, Engineering / Equipment, Artist / Backdrop, Security / Parking, Housekeeping, Event, Program
+- Signature row
+- A4 print layout and print header visibility
+- Photo aspect-ratio override to prevent artificial blank space
+- Cache-busting query strings for CSS and print-related JS
+
+## Regression protection
+The Summary/Check reporting logic was not replaced. The existing report pipeline remains in place, with print styling applied through the print-fix override.
+
+## Files intentionally excluded
+Backup files such as `style.css.bak` and `wizard.js.bak` are not included in the final deployment package.

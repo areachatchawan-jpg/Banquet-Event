@@ -30,3 +30,10 @@
 วางไฟล์ทั้งหมดใน repository root และใช้ GitHub Pages `main / (root)`
 
 ดูผลตรวจใน `TEST-REPORT.md`
+
+
+## BEO Print Layout Fix — 19 Sep 2026
+- Function Order / ใบสั่งงาน now uses a fixed two-column department layout matching the reference style.
+- Hotel identity is explicit in the printed header for Queensland Hotel Bangkok vs Baiyoke Sky Hotel Bangkok.
+- Existing event, price, payment, department, menu, program, and approval data remain data-driven; no new business data is invented.
+- The Summary/Check report print path is unchanged.

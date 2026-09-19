@@ -495,33 +495,48 @@ details.chk[open] > summary{border-bottom:1px solid var(--line);background:var(-
 /* sheet preview */
 .sheetbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .sheetwrap{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto}
-.sheet{width:750px;color:#111;font-size:11.5px;line-height:1.45}
+.sheet{width:750px;color:#111;font-size:11.2px;line-height:1.42;background:#fff}
 .sheet *{box-sizing:border-box}
-.sheet .final{text-align:center;font-weight:600;color:#C0392B;border:1px solid #000;border-bottom:0;padding:3px}
-.sheet .top{display:flex;border:1px solid #000;align-items:flex-start}
+.sheet .final{text-align:center;font-weight:700;color:#C0392B;border:1px solid #000;border-bottom:0;padding:3px 0;font-size:12px}
+.sheet .hotel-strip{display:flex;justify-content:space-between;align-items:center;border:1px solid #000;border-bottom:0;padding:2px 8px;font-size:9px;letter-spacing:.2px;font-weight:600}
+.sheet .hotel-strip b{color:#5C4A66;font-size:10px}
+.sheet .top{display:flex;border:1px solid #000;align-items:stretch}
 .sheet .top>div{padding:6px 9px}
-.sheet .top .l{flex:1}
-.sheet .top .l b{font-size:14px;display:block;letter-spacing:.3px}
-.sheet .top .c{flex:0 0 190px;text-align:center}
-.sheet .top .c img{height:40px}
-.sheet .top .r{flex:0 0 165px;text-align:right;color:#C0392B;font-weight:600}
+.sheet .top .l{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.sheet .top .l b{font-size:15px;display:block;letter-spacing:.25px}
+.sheet .top .l span{font-size:10px;font-weight:600}
+.sheet .top .c{flex:0 0 205px;text-align:center;border-left:1px solid #000;border-right:1px solid #000}
+.sheet .top .c img{height:52px;display:block;margin:0 auto 2px}
+.sheet .top .c small{display:block;font-size:8.5px;line-height:1.15}
+.sheet .top .r{flex:0 0 175px;text-align:right;color:#C0392B;font-weight:600;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.sheet .top .r b{font-size:11px}
+.sheet .top .r span{color:#111;font-size:10px;font-weight:400}
 .sheet .band{background:#CFC3DC;border:1px solid #000;border-top:0;padding:5px 9px;text-align:center;font-weight:600;font-size:12.5px}
 .sheet .info{border:1px solid #000;border-top:0}
-.sheet .info div{padding:3px 9px;border-bottom:1px dotted #888}
-.sheet .info div:last-child{border-bottom:0}
+.sheet .info>div{padding:3px 9px;border-bottom:1px dotted #888}
+.sheet .info>div:last-child{border-bottom:0}
+.sheet .info-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:0}
+.sheet .info-grid>div{padding:3px 9px;border-right:1px dotted #888}
+.sheet .info-grid>div:last-child{border-right:0}
 .sheet table{width:100%;border-collapse:collapse;border:1px solid #000;border-top:0}
 .sheet th,.sheet td{border:1px solid #777;padding:4px 7px;text-align:left;font-size:11px}
-.sheet th{background:#CFC3DC;font-weight:600}
+.sheet th{background:#CFC3DC;font-weight:600;text-align:center}
 .sheet .price{border:1px solid #000;border-top:0;padding:5px 9px}
-.sheet .cols{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #000;border-top:0}
-.sheet .bx{border-right:1px solid #777;border-bottom:1px solid #777;padding:0 0 6px}
-.sheet .bx:nth-child(2n){border-right:0}
+.sheet .bro-grid{border-left:1px solid #000;border-right:1px solid #000}
+.sheet .bro-row{display:grid;grid-template-columns:1fr 1fr;align-items:stretch}
+.sheet .bro-row.single{grid-template-columns:1fr}
+.sheet .bro-cell.full{border-right:0}
+.sheet .bro-cell{min-width:0;border-bottom:1px solid #777}
+.sheet .bro-cell.left{border-right:1px solid #777}
+.sheet .bro-cell.right{border-right:0}
+.sheet .bro-cell:empty{min-height:0}
+.sheet .bx{border-bottom:0;padding:0 0 5px;break-inside:avoid;page-break-inside:avoid}
 .sheet .bx h4{background:#CFC3DC;padding:3px 8px;font-size:11.5px;font-family:inherit;font-weight:600;border-bottom:1px solid #777}
 .sheet .bx ul{margin:5px 0 0;padding-left:20px}
 .sheet .bx li{padding:1px 0}
-.sheet .bx .ph{display:flex;gap:5px;flex-wrap:wrap;padding:6px 8px 0}
-.sheet .bx .ph figure{margin:0;width:88px}
-.sheet .bx .ph img{width:100%;height:62px;object-fit:cover;border:1px solid #777}
+.sheet .bx .ph{display:flex;gap:5px;flex-wrap:wrap;padding:6px 8px 0;aspect-ratio:auto!important;height:auto!important;min-height:0!important}
+.sheet .bx .ph figure{margin:0;width:88px;flex:0 0 88px}
+.sheet .bx .ph img{width:100%;height:62px;object-fit:contain;border:1px solid #777;background:#fff}
 .sheet .bx .ph figcaption{font-size:8.5px;line-height:1.25;padding-top:2px}
 .sheet .sign{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #000;border-top:0}
 .sheet .sign div{padding:6px 8px 26px;border-right:1px solid #777;font-size:10.5px}
@@ -530,13 +545,30 @@ details.chk[open] > summary{border-bottom:1px solid var(--line);background:var(-
 @media print{
   @page{size:A4;margin:9mm}
   body{background:#fff}
-  .tabs,.top,.lb,.toast,.modal,#gate,.sheetbar,.note,.sectionhead,.back{display:none !important}
+  .tabs,body > .shell > .top,.lb,.toast,.modal,#gate,.sheetbar,.note,.sectionhead,.back{display:none !important}
   .view{display:none !important}
   #view-sheet{display:block !important}
+  .sheet .top{display:flex!important}
   .shell{padding:0;max-width:none}
   .sheetwrap{border:0;padding:0;overflow:visible}
-  .sheet{width:100%;font-size:9.5px}
-  .sheet .bx,.sheet table{break-inside:avoid}
+  .sheet{width:100%;font-size:9.1px;line-height:1.32}
+  .sheet .hotel-strip{font-size:7.8px}
+  .sheet .hotel-strip b{font-size:8.5px}
+  .sheet .top .c{flex-basis:175px}
+  .sheet .top .r{flex-basis:150px}
+  .sheet .top .c img{height:42px}
+  .sheet .top .c small{font-size:7.2px}
+  .sheet .top .l b{font-size:12.5px}
+  .sheet .top .l span,.sheet .top .r b,.sheet .top .r span{font-size:8.3px}
+  .sheet .info-grid{grid-template-columns:1.2fr .8fr}
+  .sheet .bro-row{grid-template-columns:1fr 1fr}
+  .sheet .bx h4{font-size:9.3px;padding:3px 6px}
+  .sheet .bx li{padding:0}
+  .sheet .bx ul{margin:4px 0 0;padding-left:16px}
+  .sheet th,.sheet td{font-size:8.8px;padding:3px 5px}
+  .sheet .price{font-size:8.8px;padding:4px 7px}
+  .sheet .sign div{font-size:8.4px;padding:5px 6px 20px}
+  .sheet .bx,.sheet table,.sheet .bro-row{break-inside:avoid;page-break-inside:avoid}
   body.repPrint #view-sheet{display:none !important}
   body.repPrint #view-rev{display:block !important}
   body.repPrint .scope{display:none !important}

@@ -135,43 +135,100 @@ function renderSend(){
 }
 function sheetHTML(x){
   const s=state[x.id];
+  const hotelName = (typeof HOTELNAME!=='undefined' && HOTELNAME[x.hotel]) ? HOTELNAME[x.hotel]
+    : (x.hotel==='BY' ? 'Baiyoke Sky Hotel Bangkok' : 'Queensland Hotel Bangkok');
+  const hotelShort = x.hotel==='BY' ? 'BAIYOKE SKY' : 'QUEENSLAND';
+  const firstDate = uniqDates(x)[0];
+  const lastDate = uniqDates(x).slice(-1)[0];
+  const dateText = x.days.length>1
+    ? `${thDate(firstDate,true)} – ${thDate(lastDate,true)} — ${x.kind.toUpperCase()}`
+    : `${thDate(firstDate,true)} — ${x.kind.toUpperCase()}`;
+
   const dayRows=x.days.map(d=>`<tr><td>${thDate(d.d)}</td><td>${d.time}</td><td>${d.room}</td>
     <td>${x.guarantee} ${x.unit} · Set Up ${x.setup} ${x.unit}</td><td>${d.set||x.style}</td></tr>`).join("");
-  const box=(title,items,photos)=>`<div class="bx"><h4>${title}</h4>
-    <ul>${items.map(t=>`<li>${t}</li>`).join("")}</ul>
-    ${photos&&photos.length?`<div class="ph">${photos.map(p=>`<figure><img src="${p.src}"><figcaption>${p.cap}</figcaption></figure>`).join("")}</div>`:""}
-  </div>`;
-  const deptBoxes=x.depts.map(d=>box(d.n+(d.who?" : "+d.who:""), d.t, s.photos.filter(p=>p.dept===d.n))).join("");
-  const menuBoxes=x.days.map((d,di)=>d.menu==="ไม่มีอาหาร"?"":
-    box("เมนู "+thDate(d.d)+" — "+d.menu, (d.note?[d.note]:[]).concat(menuLines(x,di).map(t=>t.replace(/^\s+·\s/,""))))).join("");
-  const adjBoxes=(x.adj||[]).map(a=>box("ใบแก้ไข "+a.date+" — "+a.topic,
-    a.to.filter(t=>!a.from.includes(t)).map(t=>"เพิ่ม: "+t).concat(a.from.filter(t=>!a.to.includes(t)).map(t=>"ตัดออก: "+t)))).join("");
-  const progBox=x.prog.length? box("PROGRAM", x.prog.map(p=>p[0]+" — "+p[1])) : "";
-  const other=x.link? box("งานต่อเนื่อง", ["ใช้ร่วมกับใบสั่งงาน "+x.linkNo]) : "";
-  let boxes=deptBoxes+progBox+adjBoxes+menuBoxes+other;
-  const n=(boxes.match(/class="bx"/g)||[]).length;
-  if(n%2) boxes+=`<div class="bx"></div>`;
+
+  const titleOf=(d)=>{
+    const n=(d.n||'').trim();
+    if(/program|กำหนดการ/i.test(n)) return 'PROGRAM';
+    if(/menu|food service|เมนู|อาหารบริการ/i.test(n)) return 'MENU / FOOD SERVICE';
+    if(/ฝ่ายจัดเลี้ยง|banquet/i.test(n)) return 'BANQUET ARRANGEMENT';
+    if(/artist|backdrop|sign board|front office|law|regulation|pr|ป้าย|ประชาสัมพันธ์/i.test(n)) return 'ARTIST / BACKDROP';
+    if(/บาร์|bar|เครื่องดื่ม/i.test(n)) return 'BAR ARRANGEMENT';
+    if(/ครัว|เบเกอรี่|chef|kitchen|bakery/i.test(n)) return 'CHEF / KITCHEN / BAKERY';
+    if(/ช่าง|engineering|equipment|อุปกรณ์/i.test(n)) return 'ENGINEERING / EQUIPMENT';
+    if(/แม่บ้าน|housekeeping/i.test(n)) return 'HOUSEKEEPING';
+    if(/รปภ|ที่จอด|security|parking/i.test(n)) return 'SECURITY / PARKING';
+    if(/^event$|ทีมอีเวนต์|อีเวนต์/i.test(n)) return 'EVENT';
+    if(/f&b|food|entertainment/i.test(n)) return 'F&B OFFICE / ENTERTAINMENT';
+    return n.toUpperCase();
+  };
+
+  const box=(dept,items,photos)=>`<div class="bx">
+      <h4>${titleOf(dept)}${dept.who?` : ${dept.who}`:''}</h4>
+      ${items&&items.length?`<ul>${items.map(t=>`<li>${t}</li>`).join("")}</ul>`:""}
+      ${photos&&photos.length?`<div class="ph ph-beo">${photos.map(p=>`<figure><img src="${p.src}"><figcaption>${p.cap||''}</figcaption></figure>`).join("")}</div>`:""}
+    </div>`;
+
+  const items=x.depts.map((d,i)=>({d,i,html:box(d,d.t,s.photos.filter(p=>p.dept===d.n))}));
+  const rank=(d)=>{
+    const n=(d.n||'').toLowerCase();
+    if(/artist|backdrop|sign board|front office|law|regulation|pr|ป้าย|ประชาสัมพันธ์/.test(n)) return 0;
+    if(/รปภ|security|parking|ที่จอด/.test(n)) return 1;
+    if(/แม่บ้าน|housekeeping/.test(n)) return 2;
+    if(/^event$|ทีมอีเวนต์|อีเวนต์/.test(n)) return 3;
+    return 4;
+  };
+  const rrank=(d)=>{
+    const n=(d.n||'').toLowerCase();
+    if(/ฝ่ายจัดเลี้ยง|banquet/.test(n)) return 0;
+    if(/บาร์|bar|เครื่องดื่ม/.test(n)) return 1;
+    if(/ครัว|เบเกอรี่|chef|kitchen|bakery/.test(n)) return 2;
+    if(/ช่าง|engineering|equipment|อุปกรณ์/.test(n)) return 3;
+    if(/f&b|entertainment/.test(n)) return 4;
+    return 5;
+  };
+  const left=items.filter(o=>rank(o.d)<4).sort((a,b)=>rank(a.d)-rank(b.d)).map(o=>o.html);
+  const right=items.filter(o=>rrank(o.d)<5).sort((a,b)=>rrank(a.d)-rrank(b.d)).map(o=>o.html);
+  const extra=items.filter(o=>rank(o.d)>=4 && rrank(o.d)>=5).map(o=>o.html);
+  right.push(...extra);
+
+  const menuBoxes=x.days.map((d,di)=>d.menu==="ไม่มีอาหาร"?"":box({n:"MENU / FOOD SERVICE",who:d.menu},
+    (d.note?[d.note]:[]).concat(menuLines(x,di).map(t=>t.replace(/^\s+·\s/,""))),[])).join("");
+  const adjBoxes=(x.adj||[]).map(a=>box({n:`FUNCTION CHANGE ${a.date}`,who:a.topic},
+    a.to.filter(t=>!a.from.includes(t)).map(t=>"เพิ่ม: "+t).concat(a.from.filter(t=>!a.to.includes(t)).map(t=>"ตัดออก: "+t)),[])).join("");
+  const progBox=x.prog.length?box({n:"PROGRAM",who:""},x.prog.map(p=>p[0]+" — "+p[1]),[]):"";
+  if(progBox) right.push(progBox);
+  if(menuBoxes) right.push(menuBoxes);
+  if(adjBoxes) right.push(adjBoxes);
+  if(x.link) right.push(box({n:"CONTINUATION",who:""},["ใช้ร่วมกับใบสั่งงาน "+x.linkNo],[]));
+
+  const rows=[];
+  const max=Math.max(left.length,right.length);
+  for(let i=0;i<max;i++){ const l=left[i]||'', r=right[i]||''; rows.push(l&&r ? `<div class="bro-row"><div class="bro-cell left">${l}</div><div class="bro-cell right">${r}</div></div>` : `<div class="bro-row single"><div class="bro-cell ${l?'left':'right'} full">${l||r}</div></div>`); }
+
   return `<div class="final">${x.doc==="Final"?"Final Function":"ร่าง Function"}</div>
   <div class="top">
-    <div class="l"><b>BANQUET EVENT ORDER</b>FUNCTION NO : ${x.no}<br>PAGE 1 / 1</div>
-    <div class="c"><img src="${LOGO[x.hotel]}" alt=""></div>
-    <div class="r">FUNCTION ${new Date().getDate()}/${new Date().getMonth()+1}/${new Date().getFullYear()}<br>
-      <span style="color:#111;font-weight:400">${x.status}</span></div>
+    <div class="l"><b>BANQUET EVENT ORDER</b><span>FUNCTION NO : ${x.no}</span><span>PAGE 1 / 1</span></div>
+    <div class="c"><img src="${LOGO[x.hotel]}" alt="${hotelName}"><small>${hotelName}</small></div>
+    <div class="r"><b>FUNCTION ${firstDate?thDate(firstDate):''}</b><span>${x.status}</span></div>
   </div>
-  <div class="band">DATE OF EVENT : ${dateLabel(x)} — ${x.kind.toUpperCase()}</div>
+  <div class="hotel-strip">${hotelName}<b>${hotelShort}</b></div>
+  <div class="band">DATE OF EVENT : ${dateText}</div>
   <div class="info">
-    <div><b>COMPANY :</b> ${x.company}</div>
-    <div><b>CONTACT :</b> ${x.contact} &nbsp;&nbsp; <b>PHONE :</b> ${x.phone}</div>
-    <div><b>งาน :</b> ${x.title}</div>
+    <div class="info-grid"><div><b>COMPANY :</b> ${x.company||''}</div>${x.taxId?`<div><b>TAX ID :</b> ${x.taxId}</div>`:'<div></div>'}</div>
+    ${x.address?`<div><b>ADDRESS :</b> ${x.address}</div>`:''}
+    <div class="info-grid"><div><b>CONTACT :</b> ${x.contact||''}</div><div><b>PHONE :</b> ${x.phone||''}</div>${x.email?`<div><b>EMAIL :</b> ${x.email}</div>`:''}</div>
+    <div><b>EVENT :</b> ${x.title||''}</div>
   </div>
   <table><thead><tr><th>Date</th><th>Time</th><th>Function Room</th><th>Guarantee</th><th>Set Up</th></tr></thead>
     <tbody>${dayRows}</tbody></table>
   ${canMoney()?`<div class="price"><b>PRICE :</b> ${x.rev.map(r=>r.n+" "+baht(r.price)+" x "+r.qty+(r.times>1?" x "+r.times+" ครั้ง":"")+" = "+baht(r.price*r.qty*(r.times||1))+" บาท").join(" / ")}</div>
   <div class="price"><b>PAYMENT :</b> ยอดรวม ${baht(total(x))} บาท · รับแล้ว ${received(x)?baht(received(x)):"—"} บาท · คงเหลือ ${baht(total(x)-received(x))} บาท</div>`:""}
-  <div class="cols">${boxes}</div>
+  <div class="bro-grid">${rows.join("")}</div>
   <div class="sign"><div>SALES IN CHARGE : ${x.sales}</div><div>EVENT : ${x.event}</div>
     <div>CHIEF ACCOUNTANT</div><div>APPROVED BY : ${x.approve}</div></div>`;
 }
+
 function doPrint(){
   const x=f(); if(!x) return;
   document.getElementById("sheet").innerHTML=sheetHTML(x);

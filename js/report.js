@@ -338,21 +338,46 @@ function fillRepHead(){
     + (me? "<br>โดย "+me.name : "");
 }
 function openPrintable(sectionId, bodyClass, title){
-  const css=[...document.querySelectorAll("style")].map(s=>s.textContent).join("\n");
   const sec=document.getElementById(sectionId).outerHTML;
+  // สำคัญ: หน้าเว็บใช้ CSS แยกไฟล์ จึงต้องโหลด css/style.css เข้าเอกสารพิมพ์ด้วย
+  // ไม่เช่นนั้นหน้าพิมพ์/PDF จะเสีย layout และไม่เหมือนตัวอย่าง BEO
+  const pageCssUrl=new URL("css/style.css?v=20260919-print3", location.href).href;
   const doc=`<!DOCTYPE html><html lang="th" data-hotel="${document.documentElement.getAttribute("data-hotel")||"QL"}" data-theme="light">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Noto+Serif+Thai:wght@500;600&display=swap" rel="stylesheet">
-<style>${css}</style>
-<style>body{background:#fff}.shell{padding:14px}.view{display:block !important;padding-top:0}
-body.repPrint #repHead{display:block}body.repPrint .sectionhead,body.repPrint .scope{display:none}
-.prbar{display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px 0;max-width:1180px;margin:0 auto}
-@media print{.prbar{display:none !important}.shell{padding:0}}</style></head>
+<link rel="stylesheet" href="${pageCssUrl}">
+<style>
+  html,body{margin:0;padding:0;background:#fff;color:#111;}
+  body{font-family:"IBM Plex Sans Thai","Helvetica Neue",Arial,sans-serif;}
+  .shell{padding:14px;max-width:1180px;margin:0 auto;}
+  .view{display:block !important;padding-top:0;}
+  .sheetwrap{background:#fff;}
+  body.repPrint #repHead{display:block;}
+  body.repPrint .sectionhead,body.repPrint .scope{display:none;}
+  .prbar{display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px 0;max-width:1180px;margin:0 auto;}
+  @media print{
+    @page{size:A4 portrait;margin:9mm;}
+    html,body{background:#fff!important;}
+    .prbar,.top,.tabs,.back,.sectionhead,.sheetbar,.note,.lb,.toast,.modal,#gate{display:none!important;}
+    .shell{padding:0!important;max-width:none!important;}
+    #view-sheet{display:block!important;}
+    .sheetwrap{border:0!important;padding:0!important;overflow:visible!important;}
+    .sheet{width:100%!important;max-width:none!important;color:#111!important;font-size:9.5px!important;line-height:1.38!important;}
+    .sheet .top{display:flex!important;}
+    .sheet .cols{grid-template-columns:1fr 1fr!important;}
+    .sheet .bx,.sheet table,.sheet .price,.sheet .info,.sheet .top,.sheet .band,.sheet .sign{break-inside:avoid;page-break-inside:avoid;}
+    .sheet .bx .ph img{break-inside:avoid;page-break-inside:avoid;}
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  }
+</style></head>
 <body class="${bodyClass}">
 <div class="prbar"><button class="save" onclick="window.print()">พิมพ์ / บันทึก PDF</button></div>
 <div class="shell">${sec}</div></body></html>`;
   deliverDoc(doc, title.replace(/[\\/:*?"<>|]/g,"").slice(0,80)+".html", bodyClass);
 }
+
 async function deliverDoc(doc, filename, bodyClass){
   // 1) ในแอป Claude: บันทึกเป็นไฟล์ให้ผู้ใช้
   try{
