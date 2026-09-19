@@ -31,11 +31,3 @@
 
 ## Verification limitation
 A full live-browser interaction test against the deployed GitHub Pages/Supabase environment could not be completed inside the isolated execution environment used for this build. The package was therefore validated with source-level, syntax, structural, and module-level checks; production data was not modified during testing.
-
-## Print / PDF Verification - 19 Sep 2026
-- BEO print template rebuilt around the existing sample layout: Final Function bar, Banquet Event Order header, hotel logo, function/date/status, event detail table, pricing/payment, 2-column department blocks, menu/program/adjustment blocks, and approval signature row.
-- Removed the hard-coded `PAGE 1 / 1` label so multi-page jobs do not show an incorrect page count.
-- Print CSS explicitly restores the BEO header (`.print-sheet .top`) so the site header rule does not hide the printable document header.
-- A4 portrait print layout verified with a generated 2-page test PDF.
-- Verified no clipped header, missing logo, overlapping department blocks, or broken table structure in the rendered test pages.
-- Browser Print / Save as PDF continues to use the print template via the existing print flow.
