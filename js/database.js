@@ -82,18 +82,26 @@ async function dbLoad(){
     const r1=await sb.from(T_FUNC).select("id,data");
     if(r1.error) throw r1.error;
     if(Array.isArray(r1.data)){
-      // A successful empty query means the production table is empty; do not
-      // resurrect bundled demo/sample jobs from data.js.
-      FUNCS.length=0;
-      Object.keys(state).forEach(k=>delete state[k]);
-      lastHash={};
-      r1.data.forEach(row=>{
-        const f=row.data && row.data.f; if(!f || !f.days || !f.days.length) return;
-        FUNCS.push(f); unpackState(f.id, row.data.st);
-      });
-      FUNCS.sort((a,b)=> a.days[0].d===b.days[0].d ? (a.no<b.no?-1:1) : (a.days[0].d<b.days[0].d?-1:1));
-      FUNCS.forEach(x=>{ lastHash[x.id]=snapFunc(x); });
-      if(!FUNCS.some(x=>x.id===cur)) cur = FUNCS.length? FUNCS[0].id : null;
+      if(r1.data.length){
+        // Only replace the bundled data when the database actually returned rows.
+        // An empty result must not wipe the jobs already loaded from data.js.
+        FUNCS.length=0;
+        Object.keys(state).forEach(k=>delete state[k]);
+        lastHash={};
+        r1.data.forEach(row=>{
+          const f=row.data && row.data.f; if(!f || !f.days || !f.days.length) return;
+          FUNCS.push(f); unpackState(f.id, row.data.st);
+        });
+        FUNCS.sort((a,b)=> a.days[0].d===b.days[0].d ? (a.no<b.no?-1:1) : (a.days[0].d<b.days[0].d?-1:1));
+        FUNCS.forEach(x=>{ lastHash[x.id]=snapFunc(x); });
+        if(!FUNCS.some(x=>x.id===cur)) cur = FUNCS.length? FUNCS[0].id : null;
+      } else {
+        // DB is reachable but has no event rows: keep bundled jobs and let
+        // autoSync seed them into Supabase instead of blanking the screen.
+        lastHash={};
+        FUNCS.forEach(x=>{ lastHash[x.id]=null; });
+        if(!FUNCS.some(x=>x.id===cur)) cur = FUNCS.length? FUNCS[0].id : null;
+      }
     }
 
     dbReady=true;
