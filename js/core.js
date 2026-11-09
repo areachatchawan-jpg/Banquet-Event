@@ -100,14 +100,15 @@ function setHotel(h){
   cur = list.length ? (list.some(x=>x.id===cur)? cur : list[0].id) : null;
   renderHero(true);
   renderList(); renderBEO(); renderPhotos(); renderSend(); renderRev();
-  if(tab!=="rev") go("list");
+  if(tab!=="rev" && tab!=="cal") go("list");
 }
 function go(t){
   if(t==="admin" && (!me || me.role!=="admin")) return;
   if(t==="rev" && !canMoney()) return;
   if(t==="add" && !canEdit()) return;
   tab=t;
-  ["list","beo","photos","rev","add","send","sheet","admin"].forEach(k=>{
+  if(t==="cal" && typeof renderCal==="function") renderCal();
+  ["list","cal","beo","photos","rev","add","send","sheet","admin"].forEach(k=>{
     document.getElementById("view-"+k).classList.toggle("on",k===t);
     const b=document.getElementById("t-"+k);
     if(b) b.setAttribute("aria-selected", k===t || (t==="add"&&k==="list"));
@@ -194,6 +195,7 @@ function renderHero(anim){
   if(anim){ hero.classList.remove("in"); void hero.offsetWidth; hero.classList.add("in"); }
 }
 function renderList(){
+  if(tab==="cal" && typeof renderCal==="function") renderCal();
   fl1.setAttribute("aria-pressed",filt==="up"); fl2.setAttribute("aria-pressed",filt==="past"); fl3.setAttribute("aria-pressed",filt==="all");
   const all=FUNCS.filter(x=>inH(x) && visible(x)).slice()
     .sort((a,b)=> a.days[0].d===b.days[0].d ? (a.no<b.no?-1:1) : (a.days[0].d<b.days[0].d?-1:1));

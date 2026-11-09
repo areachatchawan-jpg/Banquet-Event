@@ -62,10 +62,10 @@ function applySettings(o){
   if(Array.isArray(o.KINDS)) KINDS=o.KINDS;
   if(Array.isArray(o.KINDGROUPS)) KINDGROUPS=o.KINDGROUPS;
   if(Array.isArray(o.DEPTGROUPS)) DEPTGROUPS=o.DEPTGROUPS;
-  if(o.KPIW) KPIW=o.KPIW;
+  if(o.KPIW) KPIW=Object.assign({}, KPIW, o.KPIW);
   if(o.KPIGRADE) KPIGRADE=o.KPIGRADE;
   if(o.KPIKEY) KPIKEY=o.KPIKEY;
-  if(o.KPINAME) KPINAME=o.KPINAME;
+  if(o.KPINAME) KPINAME=Object.assign({}, KPINAME, o.KPINAME);
   rebuildMenuOrder();
 }
 

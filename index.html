@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Noto+Serif+Thai:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261109-wf1">
+<link rel="stylesheet" href="css/style.css?v=20261109-wf2">
 </head>
 <body>
 
@@ -47,6 +47,7 @@
 
   <nav class="tabs" role="tablist">
     <button role="tab" aria-selected="true" onclick="go('list')" id="t-list"><span class="dot"></span>รวมงาน</button>
+    <button role="tab" aria-selected="false" onclick="go('cal')" id="t-cal"><span class="dot"></span>ปฏิทิน</button>
     <button role="tab" aria-selected="false" onclick="go('beo')" id="t-beo"><span class="dot"></span>ใบสั่งงาน</button>
     <button role="tab" aria-selected="false" onclick="go('photos')" id="t-photos"><span class="dot"></span>รูปแนบ</button>
     <button role="tab" aria-selected="false" onclick="go('send')" id="t-send"><span class="dot"></span>ส่งงาน</button>
@@ -89,6 +90,11 @@
     </div>
     <div class="listwrap" id="fnlist"></div>
     <p class="note" id="listNote">ยังไม่ได้ต่อฐานข้อมูล ข้อมูลที่แก้จะหายเมื่อปิดหน้า</p>
+  </section>
+
+  <section class="view" id="view-cal">
+    <div class="listwrap" id="calBox"></div>
+    <p class="note">Q = Queensland · B = Baiyoke Sky · ตัวเลขคือจำนวนงานในวันนั้น · <b style="color:#B4573F">!</b> = มีห้องชน · แตะวันที่เพื่อดูรายการงาน</p>
   </section>
 
   <section class="view" id="view-beo">
@@ -315,16 +321,17 @@
 </div>
 
 
-<script src="js/data.js?v=20261109-wf1"></script>
-<script src="js/core.js?v=20261109-wf1"></script>
-<script src="js/beo.js?v=20261109-wf1"></script>
-<script src="js/media.js?v=20261109-wf1"></script>
-<script src="js/report.js?v=20261109-wf1"></script>
-<script src="js/print-fix.js?v=20261109-wf1"></script>
-<script src="js/wizard.js?v=20261109-wf1"></script>
-<script src="js/admin.js?v=20261109-wf1"></script>
-<script src="js/food-editor.js?v=20261109-wf1"></script>
-<script src="js/workflow.js?v=20261109-wf1"></script>
-<script src="js/database.js?v=20261109-wf1"></script>
+<script src="js/data.js?v=20261109-wf2"></script>
+<script src="js/core.js?v=20261109-wf2"></script>
+<script src="js/beo.js?v=20261109-wf2"></script>
+<script src="js/media.js?v=20261109-wf2"></script>
+<script src="js/report.js?v=20261109-wf2"></script>
+<script src="js/print-fix.js?v=20261109-wf2"></script>
+<script src="js/wizard.js?v=20261109-wf2"></script>
+<script src="js/admin.js?v=20261109-wf2"></script>
+<script src="js/food-editor.js?v=20261109-wf2"></script>
+<script src="js/workflow.js?v=20261109-wf2"></script>
+<script src="js/calendar.js?v=20261109-wf2"></script>
+<script src="js/database.js?v=20261109-wf2"></script>
 </body>
 </html>

@@ -80,21 +80,24 @@ function renderChecks(set){
 }
 
 /* ---- ประเมิน KPI รายแผนก ---- */
-let KPIW={done:30, ready:20, owner:10, ref:10, adj:10, close:10, detail:10, menu:25, seat:10, clash:10};
+let KPIW={done:30, ready:20, owner:10, ref:10, adj:10, close:10, detail:10, menu:25, seat:10, clash:10, ack:15};
+/* นับ KPI รับทราบเฉพาะงานที่จัดตั้งแต่วันที่เปิดใช้ระบบรับทราบ */
+const WF_START="2026-11-09";
 let KPIGRADE={great:90, good:80, fair:70};
 let KPIKEY={kitchen:"ครัว, เบเกอรี่, kitchen", fb:"จัดเลี้ยง, บริการ, เสิร์ฟ, F&B, banquet"};
 let KPINAME={
   done:"งานที่ได้รับมอบหมายเสร็จ", ready:"ความพร้อมของงานที่ถึงกำหนดแล้ว", owner:"ระบุผู้รับผิดชอบครบ",
   ref:"มีรูป / เอกสารอ้างอิงแนบ", adj:"ไม่มีใบแก้ไขหลังยืนยันงาน", close:"ปิดงานครบหลังจบงาน",
   detail:"รายการงานระบุชัดเจน", menu:"ยืนยันรายการอาหารครบทุกวัน",
-  seat:"จัดที่นั่งครบตามจำนวนรับรอง", clash:"ไม่มีห้องชนกันในวันเดียวกัน"};
+  seat:"จัดที่นั่งครบตามจำนวนรับรอง", clash:"ไม่มีห้องชนกันในวันเดียวกัน", ack:"รับทราบใบสั่งงานก่อนวันงาน"};
 const KPIKEYS=Object.keys(KPINAME);
 const KPIHOW={
   done:"รายการงานที่ติ๊กแล้ว ÷ ทั้งหมด", ready:"เฉพาะงานที่ถึงวันจัดแล้ว ติ๊กครบแค่ไหน",
   owner:"งานที่กรอกชื่อผู้รับผิดชอบ ÷ งานที่ดูแล", ref:"งานที่แผนกมีรูปแนบ ÷ งานที่ดูแล",
   adj:"งานที่ไม่มีใบแก้ไข ÷ งานที่ดูแล", close:"งานที่เลยวันแล้วและปิดงาน ÷ งานที่เลยวันแล้ว",
   detail:"รายการงานที่ไม่ใช่ (ยังไม่ระบุ) ÷ ทั้งหมด", menu:"วันจัดงานที่เลือกอาหารครบ ÷ วันที่มีอาหาร",
-  seat:"งานที่จัดที่นั่ง ≥ จำนวนรับรอง ÷ งานที่ดูแล", clash:"งานที่ห้องไม่ชนกัน ÷ งานที่ดูแล"};
+  seat:"งานที่จัดที่นั่ง ≥ จำนวนรับรอง ÷ งานที่ดูแล", clash:"งานที่ห้องไม่ชนกัน ÷ งานที่ดูแล",
+  ack:"แผนกที่รับทราบเวอร์ชันล่าสุด ÷ แผนกในงานที่ถึง D-1 แล้ว (นับงานตั้งแต่ 9 พ.ย. 2569)"};
 let DEPTGROUPS=[
  {g:"ครัว / เบเกอรี่", kw:["ครัว","เบเกอรี่","kitchen","ขนม"]},
  {g:"ฝ่ายจัดเลี้ยง (F&B)", kw:["จัดเลี้ยง","banquet","บริการ","เสิร์ฟ","f&b"]},
@@ -142,7 +145,7 @@ function buildKPI(set){
   set.forEach(x=>x.depts.forEach(d=>{ const g=deptGroup(d.n); (gmap[g]=gmap[g]||new Set()).add(d.n); }));
   return Object.keys(gmap).map(n=>{
     const jobs=set.filter(x=>x.depts.some(d=>deptGroup(d.n)===n));
-    let tasks=0, done=0, pT=0, pD=0, real=0, owner=0, ref=0, adj=0, pastN=0, closed=0;
+    let tasks=0, done=0, pT=0, pD=0, real=0, owner=0, ref=0, adj=0, pastN=0, closed=0, akN=0, akOK=0;
     const who=new Set();
     jobs.forEach(x=>{
       const st=state[x.id];
@@ -156,6 +159,8 @@ function buildKPI(set){
           if(tk && !/^\(ยังไม่ระบุ/.test(tk)) real++;
           if(started){ pT++; if(ok) pD++; }
         });
+        if(uniqDates(x)[0]>=WF_START && daysTo(x)<=1){ akN++;
+          if(dp.ack && (dp.ack.ver||1)>=(x.ver||1)) akOK++; }
         if(dp.who){ hasWho=true; who.add(dp.who); }
         if(st.photos.some(p=>p.dept===dp.n)) hasRef=true;
       });
@@ -175,6 +180,7 @@ function buildKPI(set){
     put("adj", J? 100-adj/J*100 : null);
     put("close", pastN? closed/pastN*100 : null);
     put("detail", tasks? real/tasks*100 : null);
+    put("ack", akN? akOK/akN*100 : null);
     const ty=deptType(n);
     if(ty==="kitchen"){
       let dn=0, ok=0;
