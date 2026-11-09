@@ -47,7 +47,7 @@ function renderBEO(){
       <div class="hd"><b>${thDate(d.d,true)} · ${d.time}</b><span>${d.room} — ${d.set||""}</span></div>
       ${d.note?`<div style="font-size:12.5px;color:var(--muted);margin-top:4px">${d.note}</div>`:""}
       <select class="setsel" ${canEdit()?"":"disabled"} onchange="changeMenu(${di},this.value)" aria-label="ชุดเมนูวันที่ ${thDate(d.d)}">
-        ${MENU_ORDER.map(m=>`<option ${m===d.menu?"selected":""}>${m}</option>`).join("")}
+        ${(MENU_ORDER.includes(d.menu)?MENU_ORDER:MENU_ORDER.concat([d.menu])).map(m=>`<option ${m===d.menu?"selected":""}>${m}</option>`).join("")}
       </select>
       ${MENUS[d.menu] ? `<details class="menu"><summary>ดูรายการอาหาร</summary>${menuHTML(di)}</details>${canEdit()?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="ghost" onclick="openMenuEditor(${di})">✏️ แก้เมนูเฉพาะงาน</button>${feHasOverride(x,di)?`<button class="ghost" onclick="feResetMenu(${di})">↩ คืนค่ามาตรฐาน</button>`:""}</div>`:""}` : ""}
     </div>`).join("");
