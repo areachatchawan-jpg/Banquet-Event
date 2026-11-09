@@ -132,6 +132,8 @@ function pending(x){
   const s=state[x.id], left=[];
   let undone=0; x.depts.forEach((d,di)=>d.t.forEach((_,ti)=>{ if(!s.done.has(di+"-"+ti)) undone++; }));
   if(undone) left.push("งานฝ่ายยังไม่ติ๊ก "+undone+" รายการ");
+  const aw=ackWaiting(x).length; if(aw) left.push("รอแผนกรับทราบ "+aw+" แผนก");
+  const aq=ackQuestions(x).length; if(aq) left.push("คำถามค้าง "+aq+" ข้อ");
   if(canMoney() && total(x)-received(x)>0) left.push("ยังค้างรับ "+baht(total(x)-received(x))+" บาท");
   return left;
 }
@@ -249,6 +251,7 @@ function renderList(){
         <span class="tag2">${x.doc}</span>
         <span class="tag2">${size}</span>
         ${x.adj&&x.adj.length?`<span class="tag2">มีใบแก้ไข</span>`:""}
+        ${wfTags(x)}
         <span class="amt">${baht(total(x))}<u>บาท</u></span>
       </div></button>`;
   });

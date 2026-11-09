@@ -8,7 +8,7 @@ function menuLines(x,di){
 }
 function headText(x){
   const L=[];
-  L.push("["+(x.hotel==="QL"?"QUEENSLAND":"BAIYOKE SKY")+"] ใบสั่งงาน "+x.no+" — "+x.doc);
+  L.push("["+(x.hotel==="QL"?"QUEENSLAND":"BAIYOKE SKY")+"] ใบสั่งงาน "+x.no+" — "+x.doc+" · V"+ver(x)+(x.updAt?" (แก้ไข "+x.updAt+")":""));
   L.push(x.title); L.push("ประเภท: "+x.kind);
   uniqDates(x).forEach(u=>{
     x.days.filter(d=>d.d===u).forEach((d,i)=>{
@@ -18,6 +18,8 @@ function headText(x){
   });
   L.push("รับรอง "+x.guarantee+" "+x.unit+" / เซ็ตอัพ "+x.setup+" "+x.unit+" ("+x.style+")");
   L.push("ผู้ติดต่อ "+x.contact+"  "+x.phone);
+  if(x.onsite) L.push("ผู้ติดต่อหน้างาน "+x.onsite);
+  if(x.diet) L.push("⚠ อาหาร: "+x.diet);
   return L;
 }
 function fullText(x){
@@ -66,10 +68,11 @@ function deptText(x,di){
       L.push(thDate(dd.d)+" : "+dd.menu); if(dd.note) L.push("  "+dd.note); L.push(...menuLines(x,dj)); });
   }
   (x.adj||[]).forEach(a=>{
-    L.push("","* ใบแก้ไข "+a.date+" : "+a.topic);
+    L.push("","* ใบแก้ไข "+(a.ver?"V"+a.ver+" ":"")+a.date+" : "+a.topic);
     a.to.filter(t=>!a.from.includes(t)).forEach(t=>L.push("   + "+t));
   });
-  L.push("","แจ้งโดย Event "+x.event);
+  L.push("","👉 กรุณาเปิดระบบแล้วกด \"รับทราบ V"+ver(x)+"\" ที่การ์ดของ "+d.n+" (มีคำถามกด \"มีคำถาม\")");
+  L.push("แจ้งโดย Event "+x.event);
   return L.join("\n");
 }
 let mCb=null;
@@ -121,11 +124,11 @@ function renderSend(){
   const s=state[x.id];
   sendWho.textContent=x.title;
   const sd=(me&&me.role==="dept")? x.depts.map((d,i)=>[d,i]).filter(a=>a[0].n===me.dept) : x.depts.map((d,i)=>[d,i]);
-  sendBox.innerHTML=sd.map(([d,di])=>{
+  sendBox.innerHTML=`<div class="pad" style="font-size:13px;color:var(--muted)">ใบสั่งงาน V${ver(x)} · รับทราบแล้ว ${x.depts.length-ackWaiting(x).length}/${x.depts.length} แผนก</div>`+sd.map(([d,di])=>{
     const done=d.t.filter((_,ti)=>s.done.has(di+"-"+ti)).length, p=d.t.length?Math.round(done/d.t.length*100):0;
     const np=s.photos.filter(q=>q.dept===d.n).length;
     return `<div class="sendrow">
-      <div class="nm"><b>${d.n}</b><span>${d.who||"ยังไม่ระบุผู้รับผิดชอบ"} · ${done}/${d.t.length} รายการ${np?" · 📎 "+np+" รูป":""}</span>
+      <div class="nm"><b>${d.n} ${ackState(x,d)==="ok"?`<span class="tag2 done">✓ รับทราบ V${d.ack.ver||1}</span>`:ackState(x,d)==="old"?`<span class="tag2 bad">ต้องรับทราบ V${ver(x)} ใหม่</span>`:`<span class="tag2 hold">ยังไม่รับทราบ</span>`}${d.q?` <span class="tag2 hold">❓ มีคำถาม</span>`:""}</b><span>${d.who||"ยังไม่ระบุผู้รับผิดชอบ"} · ${done}/${d.t.length} รายการ${np?" · 📎 "+np+" รูป":""}</span>
         <div class="bar2"><i style="width:${p}%"></i></div></div>
       <div class="btns">
         <button class="ghost" onclick="sendDept(${di},'copy')">คัดลอก</button>
@@ -194,8 +197,8 @@ function sheetHTML(x){
 
   const menuBoxes=x.days.map((d,di)=>d.menu==="ไม่มีอาหาร"?"":box({n:"MENU / FOOD SERVICE",who:d.menu},
     (d.note?[d.note]:[]).concat(menuLines(x,di).map(t=>t.replace(/^\s+·\s/,""))),[])).join("");
-  const adjBoxes=(x.adj||[]).map(a=>box({n:`FUNCTION CHANGE ${a.date}`,who:a.topic},
-    a.to.filter(t=>!a.from.includes(t)).map(t=>"เพิ่ม: "+t).concat(a.from.filter(t=>!a.to.includes(t)).map(t=>"ตัดออก: "+t)),[])).join("");
+  const adjBoxes=(x.adj||[]).map(a=>box({n:`FUNCTION CHANGE ${a.ver?"V"+a.ver+" ":""}${a.date}`,who:a.topic},
+    !a.from.length ? a.to : a.to.filter(t=>!a.from.includes(t)).map(t=>"เพิ่ม: "+t).concat(a.from.filter(t=>!a.to.includes(t)).map(t=>"ตัดออก: "+t)),[])).join("");
   const progBox=x.prog.length?box({n:"PROGRAM",who:""},x.prog.map(p=>p[0]+" — "+p[1]),[]):"";
   if(progBox) right.push(progBox);
   if(menuBoxes) right.push(menuBoxes);
@@ -210,7 +213,7 @@ function sheetHTML(x){
   <div class="top">
     <div class="l"><b>BANQUET EVENT ORDER</b><span>FUNCTION NO : ${x.no}</span><span>PAGE 1 / 1</span></div>
     <div class="c"><img src="${LOGO[x.hotel]}" alt="${hotelName}"><small>${hotelName}</small></div>
-    <div class="r"><b>FUNCTION ${firstDate?thDate(firstDate):''}</b><span>${x.status}</span></div>
+    <div class="r"><b>${x.updAt?"UPDATE FUNCTION "+x.updAt.replace(/ \d\d:\d\d$/,""):"FUNCTION "+(firstDate?thDate(firstDate):'')}</b><span>V${ver(x)} · ${x.status}</span></div>
   </div>
   <div class="hotel-strip">${hotelName}<b>${hotelShort}</b></div>
   <div class="band">DATE OF EVENT : ${dateText}</div>
@@ -218,7 +221,9 @@ function sheetHTML(x){
     <div class="info-grid"><div><b>COMPANY :</b> ${x.company||''}</div>${x.taxId?`<div><b>TAX ID :</b> ${x.taxId}</div>`:'<div></div>'}</div>
     ${x.address?`<div><b>ADDRESS :</b> ${x.address}</div>`:''}
     <div class="info-grid"><div><b>CONTACT :</b> ${x.contact||''}</div><div><b>PHONE :</b> ${x.phone||''}</div>${x.email?`<div><b>EMAIL :</b> ${x.email}</div>`:''}</div>
+    ${x.onsite?`<div><b>ON-SITE CONTACT :</b> ${x.onsite}</div>`:''}
     <div><b>EVENT :</b> ${x.title||''}</div>
+    ${x.diet?`<div><b>DIETARY / ALLERGY :</b> ${x.diet}</div>`:''}
   </div>
   <table><thead><tr><th>Date</th><th>Time</th><th>Function Room</th><th>Guarantee</th><th>Set Up</th></tr></thead>
     <tbody>${dayRows}</tbody></table>
@@ -269,7 +274,7 @@ function openAdd(){
     el.innerHTML=STAFF[k].map(o=>`<option>${o}</option>`).join("");
   });
   if(me&&me.role==="sales" && STAFF.sales.includes(me.name)) a_sales.value=me.name;
-  ["a_title","a_company","a_contact","a_phone","a_g","a_price","a_dep"].forEach(k=>document.getElementById(k).value="");
+  ["a_title","a_company","a_contact","a_phone","a_email","a_onsite","a_diet","a_g","a_price","a_dep"].forEach(k=>document.getElementById(k).value="");
   a_from.value=""; a_to.value="";
   draft={ depts: DEPTS_BASIC.map(d=>({use:true, n:d.n, who:"", tasks:d.t.slice(), photos:[]})), sel:{} };
   fillRooms(); modeFields(); renderDraftDepts(); wMenuPick(); wIdx=1; paintStep(); go("add");
@@ -339,7 +344,7 @@ function wDays(){
   const time=fmtT(a_t1.value)+" – "+fmtT(a_t2.value)+" น.";
   const room=a_room.value==="ETC"? "ระบุภายหลัง" : a_room.value;
   for(let d=new Date(from); d<=to; d.setDate(d.getDate()+1))
-    days.push({d:d.toISOString().slice(0,10), time, room, set:a_style.value+" "+(a_g.value||"")+" "+a_unit.value, menu:a_menu.value, note:""});
+    days.push({d:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"), time, room, set:a_style.value+" "+(a_g.value||"")+" "+a_unit.value, menu:a_menu.value, note:""});
   return days;
 }
 function wRev(days){
@@ -374,7 +379,7 @@ function buildReview(){
   const days=wDays(), rev=wRev(days), hv=a_hotel.value;
   const sum=rev.reduce((a,r)=>a+r.price*r.qty*(r.times||1),0), dep=+a_dep.value||0;
   const u=[...new Set(days.map(d=>d.d))];
-  const clash=FUNCS.filter(x=>x.hotel===hv && x.days.some(d=>u.includes(d.d) && d.room===days[0].room));
+  const clash=clashesOf({id:"__new__", hotel:hv, days}).map(c=>c.y).filter((y,i,a)=>a.indexOf(y)===i);
   a_review.innerHTML=`<div class="rv">
     <div class="rvh"><span>ใบสั่งงานใหม่ · ${a_kind.value}</span><span>${a_status.value}</span></div>
     <div class="rvb"><img src="${LOGO[hv]}" alt=""><h3>${a_title.value}</h3>
@@ -404,7 +409,7 @@ function buildReview(){
       <b>เมนู ${a_menu.value}</b>
       ${Object.keys(draft.sel).map(g=>{const v=[...draft.sel[g]]; return v.length?`<div style="padding:4px 0;color:var(--muted)">${g}: ${v.join(", ")}</div>`:"";}).join("")}
     </div>
-    ${clash.length?`<div class="warn">⚠ ห้องนี้มีงานอยู่แล้วในวันเดียวกัน: ${clash.map(c=>"ใบ "+c.no+" "+c.title).join(", ")} — ตรวจสอบก่อนยืนยัน</div>`:""}
+    ${clash.length?`<div class="warn">⚠ ห้องนี้มีงานอยู่แล้วในช่วงเวลาที่ทับกัน: ${clash.map(c=>"ใบ "+c.no+" "+c.title).join(", ")} — ตรวจสอบก่อนยืนยัน</div>`:""}
   </div>`;
 }
 function saveNew(){
@@ -414,6 +419,7 @@ function saveNew(){
   const nf={ id:"n"+Date.now(), hotel:hv, no:(FUNCS.filter(x=>x.hotel===hv).length+1)+"/"+(from.getMonth()+1),
     doc:"ร่าง", status:a_status.value, kind:a_kind.value, title:a_title.value.trim(),
     company:a_company.value.trim()||"—", contact:a_contact.value.trim()||"—", phone:a_phone.value.trim()||"—",
+    email:a_email.value.trim(), onsite:a_onsite.value.trim(), diet:a_diet.value.trim(), ver:1, miles:{}, created:todayStr(),
     unit:a_unit.value, guarantee:g, setup:g, style:a_style.value,
     mode:a_mode.value==="rent"?"rent":a_mode.value==="pack"?"pack":(days.length>1?"meal":"head"),
     price:+a_price.value||0, days, rev, dep:{amt:0,when:"—"}, pays:(+a_dep.value>0?[{d:thDate(todayStr()),amt:+a_dep.value,note:"มัดจำ"}]:[]), prog:[],

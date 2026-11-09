@@ -619,3 +619,32 @@ details.chk[open] > summary{border-bottom:1px solid var(--line);background:var(-
 .phdel{position:absolute;right:7px;top:7px;z-index:2;border:0;border-radius:999px;padding:5px 8px;background:rgba(20,16,22,.72);color:#fff;font-size:11px;cursor:pointer}
 .phdel:hover{background:#B4573F}
 .phlbdel{margin-left:auto!important;background:rgba(180,87,63,.84)!important;width:auto!important;height:34px!important;padding:0 12px!important;font-size:12px!important}
+
+/* ===== workflow: version / acknowledge / deadlines / clash (2026-11-09) ===== */
+.tag2.bad{color:#B4573F;border-color:currentColor;font-weight:600}
+.wf{margin-top:14px;padding-top:12px;border-top:1px dotted var(--line);display:grid;gap:9px;font-size:13px}
+.wfh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted)}
+.wfh .ghost{margin-left:auto;font-size:12.5px;padding:5px 12px}
+.vbadge{background:var(--plum);color:var(--paper);border-radius:6px;padding:1px 9px;font-weight:600;font-size:12.5px}
+.wfrow{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.wfwarn{color:var(--warn)} .wfok{color:var(--ok)}
+.wfbad{color:#B4573F;background:rgba(180,87,63,.08);border:1px solid rgba(180,87,63,.35);border-radius:8px;padding:8px 10px;font-weight:600}
+.miles{display:grid;gap:4px}
+.mile{display:grid;grid-template-columns:auto 42px 92px 1fr auto;gap:8px;align-items:center;padding:5px 8px;border-radius:7px;background:var(--soft)}
+.mile b{font-size:12.5px} .mile span{color:var(--muted);font-size:12px} .mile em{font-style:normal}
+.mile i{font-style:normal;font-size:11.5px;color:var(--muted)}
+.mile.ok em{color:var(--muted);text-decoration:line-through} .mile.ok i{color:var(--ok)}
+.mile.late{background:rgba(180,87,63,.10)} .mile.late i,.mile.late b{color:#B4573F;font-weight:600}
+.mile.today{background:rgba(176,128,44,.14)} .mile.today i{color:var(--warn);font-weight:600}
+@media (max-width:560px){ .mile{grid-template-columns:auto 38px 1fr auto} .mile span{display:none} }
+.ack{padding:8px 14px;border-bottom:1px solid var(--line);font-size:12.5px;display:grid;gap:6px}
+.ack.ok{background:rgba(63,114,86,.08);color:var(--ok)}
+.ack.none{background:rgba(176,128,44,.10);color:var(--warn)}
+.ack.old{background:rgba(180,87,63,.10);color:#B4573F;font-weight:600}
+.ack .btns{gap:6px} .ack .btns button{font-size:12.5px;padding:5px 12px}
+.ackq{color:var(--ink,inherit);background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:7px 9px;display:grid;gap:4px;font-weight:400}
+.ackq small{color:var(--muted)} .ackq .ghost{justify-self:start;font-size:12px;padding:3px 10px}
+.mbox.wide{max-width:460px}
+.mbox textarea{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:10px;font-size:14.5px;margin-bottom:10px;font-family:inherit;resize:vertical}
+.rvdepts{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;max-height:190px;overflow:auto;margin-bottom:8px;font-size:13.5px}
+.mile.skip{opacity:.55}
