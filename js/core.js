@@ -100,14 +100,15 @@ function setHotel(h){
   cur = list.length ? (list.some(x=>x.id===cur)? cur : list[0].id) : null;
   renderHero(true);
   renderList(); renderBEO(); renderPhotos(); renderSend(); renderRev();
-  if(tab!=="rev") go("list");
+  if(tab!=="rev" && tab!=="cal") go("list");
 }
 function go(t){
   if(t==="admin" && (!me || me.role!=="admin")) return;
   if(t==="rev" && !canMoney()) return;
   if(t==="add" && !canEdit()) return;
   tab=t;
-  ["list","beo","photos","rev","add","send","sheet","admin"].forEach(k=>{
+  if(t==="cal" && typeof renderCal==="function") renderCal();
+  ["list","cal","beo","photos","rev","add","send","sheet","admin"].forEach(k=>{
     document.getElementById("view-"+k).classList.toggle("on",k===t);
     const b=document.getElementById("t-"+k);
     if(b) b.setAttribute("aria-selected", k===t || (t==="add"&&k==="list"));
@@ -132,6 +133,8 @@ function pending(x){
   const s=state[x.id], left=[];
   let undone=0; x.depts.forEach((d,di)=>d.t.forEach((_,ti)=>{ if(!s.done.has(di+"-"+ti)) undone++; }));
   if(undone) left.push("งานฝ่ายยังไม่ติ๊ก "+undone+" รายการ");
+  const aw=ackWaiting(x).length; if(aw) left.push("รอแผนกรับทราบ "+aw+" แผนก");
+  const aq=ackQuestions(x).length; if(aq) left.push("คำถามค้าง "+aq+" ข้อ");
   if(canMoney() && total(x)-received(x)>0) left.push("ยังค้างรับ "+baht(total(x)-received(x))+" บาท");
   return left;
 }
@@ -192,6 +195,7 @@ function renderHero(anim){
   if(anim){ hero.classList.remove("in"); void hero.offsetWidth; hero.classList.add("in"); }
 }
 function renderList(){
+  if(tab==="cal" && typeof renderCal==="function") renderCal();
   fl1.setAttribute("aria-pressed",filt==="up"); fl2.setAttribute("aria-pressed",filt==="past"); fl3.setAttribute("aria-pressed",filt==="all");
   const all=FUNCS.filter(x=>inH(x) && visible(x)).slice()
     .sort((a,b)=> a.days[0].d===b.days[0].d ? (a.no<b.no?-1:1) : (a.days[0].d<b.days[0].d?-1:1));
@@ -249,6 +253,7 @@ function renderList(){
         <span class="tag2">${x.doc}</span>
         <span class="tag2">${size}</span>
         ${x.adj&&x.adj.length?`<span class="tag2">มีใบแก้ไข</span>`:""}
+        ${wfTags(x)}
         <span class="amt">${baht(total(x))}<u>บาท</u></span>
       </div></button>`;
   });

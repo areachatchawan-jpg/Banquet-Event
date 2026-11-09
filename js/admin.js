@@ -157,7 +157,7 @@ function adAddDay(){
   const x=adCollect(); if(!x) return;
   const last=x.days[x.days.length-1];
   const nd=new Date((last?last.d:todayStr())+"T00:00:00"); nd.setDate(nd.getDate()+1);
-  x.days.push({...last, d:nd.toISOString().slice(0,10)});
+  x.days.push({...last, d:nd.getFullYear()+"-"+String(nd.getMonth()+1).padStart(2,"0")+"-"+String(nd.getDate()).padStart(2,"0")});
   state[x.id].menu.push(initSel(last? last.menu : "ไม่มีอาหาร"));
   renderAdmin();
 }

@@ -2,7 +2,7 @@ function renderBEO(){
   const x=f(); if(!x) return;
   const s=state[x.id] || (state[x.id]={menu:x.days.map(d=>initSel(d.menu)),done:new Set(),menuOverrides:{},photos:[]});
   beoNo.textContent="ใบสั่งงาน "+x.no+" · "+x.kind;
-  beoStatus.textContent=x.doc+" · "+x.status;
+  beoStatus.textContent="V"+ver(x)+" · "+x.doc+" · "+x.status;
   beoLogo.src=LOGO[x.hotel]; beoLogo.alt=HOTELNAME[x.hotel];
   beoTitle.textContent=x.title;
   beoWhen.textContent=dateLabel(x)+" · "+x.days[0].time+" · "+x.days[0].room;
@@ -10,6 +10,7 @@ function renderBEO(){
   const ro = canEdit()? "" : " readonly";
   const rows=[["บริษัท","company",x.company],["ผู้ติดต่อ","contact",x.contact],["โทรศัพท์","phone",x.phone],
     ["รับรอง","guarantee",x.guarantee+" "+x.unit],["จัดที่นั่ง","setup",x.setup+" "+x.unit+" ("+x.style+")"],
+    ["อีเมล","email",x.email||""],["ผู้ติดต่อหน้างาน","onsite",x.onsite||""],["อาหาร: ข้อจำกัด / แพ้อาหาร","diet",x.diet||""],
     ["Sales","sales",x.sales],["Event","event",x.event],["อนุมัติโดย","approve",x.approve]];
   beoRows.innerHTML=rows.map(r=>{
     const body = STAFF[r[1]]
@@ -37,6 +38,7 @@ function renderBEO(){
     ${x.closed?`<div style="font-size:12.5px;color:var(--muted);margin-top:10px">ปิดงานโดย ${x.closedBy} เมื่อ ${x.closedAt}</div>`
       : pend.length?`<div style="font-size:12.5px;color:var(--warn);margin-top:10px">ค้างอยู่: ${pend.join(" · ")}</div>`
       : `<div style="font-size:12.5px;color:var(--ok);margin-top:10px">ทุกอย่างเรียบร้อย พร้อมปิดงาน</div>`}
+    ${wfStatusHTML(x)}
     ${canEdit()?`<div class="btns" style="margin-top:12px">
       ${x.closed?`<button class="ghost" onclick="reopenJob()">เปิดงานอีกครั้ง</button>`
                :`<button class="save" onclick="closeJob()">ปิดงานนี้</button>`}</div>`:""}`;
@@ -75,6 +77,7 @@ function renderBEO(){
         ? `<input value="${d.who||""}" placeholder="ผู้รับผิดชอบ" onchange="setWho(${di},this)"
              style="border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:2px 7px;font-size:12.5px;width:132px">`
         : (d.who||"—")} · ${d.t.filter((_,ti)=>s.done.has(di+"-"+ti)).length}/${d.t.length}</span></div>
+    ${ackStrip(x,di)}
     <div class="pad">${d.t.map((t,ti)=>{
       const key=di+"-"+ti;
       return `<label class="task"><input type="checkbox" ${s.done.has(key)?"checked":""}
@@ -88,14 +91,14 @@ function renderBEO(){
       </div>
     </div></div>`).join("")
     + (x.adj&&x.adj.length ? x.adj.map(a=>`<div class="card">
-        <div class="band"><span>ใบแก้ไข ${a.date}</span><span class="who">${a.topic}</span></div>
-        <div class="pad" style="display:grid;gap:12px;grid-template-columns:1fr 1fr;font-size:13px">
+        <div class="band"><span>${a.ver?"V"+a.ver+" · ":""}ใบแก้ไข ${a.date}</span><span class="who">${a.topic}</span></div>
+        ${!a.from.length?`<div class="pad" style="font-size:13px">${a.to.map(t=>`<div style="padding:2px 0;color:var(--gold);font-weight:600">• ${t}</div>`).join("")}</div>`:`<div class="pad" style="display:grid;gap:12px;grid-template-columns:1fr 1fr;font-size:13px">
           <div><div style="color:var(--muted);margin-bottom:4px">จากเดิม</div>
             ${a.from.map(t=>`<div style="padding:2px 0">${t}</div>`).join("")}</div>
           <div><div style="color:var(--muted);margin-bottom:4px">เปลี่ยนเป็น</div>
             ${a.to.map(t=>`<div style="padding:2px 0;${a.from.includes(t)?"":"color:var(--gold);font-weight:600"}">${t}</div>`).join("")}</div>
-        </div>
-        <div class="pad" style="border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)">แจ้ง: ${a.cc}</div>
+        </div>`}
+        <div class="pad" style="border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)">แจ้ง: ${a.cc}${a.by?" · ออกโดย "+a.by:""}</div>
       </div>`).join("") : "")
     + (x.link ? `<div class="card"><div class="band">งานต่อเนื่อง</div><div class="pad">
         <button class="ghost" onclick="open_('${x.link}')">ไปที่ใบสั่งงาน ${x.linkNo}</button>
