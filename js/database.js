@@ -96,11 +96,12 @@ async function dbLoad(){
         FUNCS.forEach(x=>{ lastHash[x.id]=snapFunc(x); });
         if(!FUNCS.some(x=>x.id===cur)) cur = FUNCS.length? FUNCS[0].id : null;
       } else {
-        // DB is reachable but has no event rows: keep bundled jobs and let
-        // autoSync seed them into Supabase instead of blanking the screen.
+        // DB is reachable and has no event rows: show an empty list.
+        // Never seed the sample jobs from data.js into the real database.
+        FUNCS.length=0;
+        Object.keys(state).forEach(k=>delete state[k]);
         lastHash={};
-        FUNCS.forEach(x=>{ lastHash[x.id]=null; });
-        if(!FUNCS.some(x=>x.id===cur)) cur = FUNCS.length? FUNCS[0].id : null;
+        cur=null;
       }
     }
 
