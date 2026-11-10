@@ -99,7 +99,7 @@ function roomParts(r){
   return [m[2],m[3]].map(n=>(base+n+(tail?" "+tail:"")).replace(/\s+/g," ").trim());
 }
 // ห้องอาหาร/เอาท์เล็ตรับหลายกลุ่มพร้อมกันได้ จึงไม่นับเป็นห้องชน
-const SHARED_ROOM=/bistro|grill|restaurant|caf[eé]|ห้องอาหาร|ภัตตาคาร/i;
+const SHARED_ROOM=/bistro|grill|restaurant|caf[eé]|balcony|bangkok sky|ห้องอาหาร|ภัตตาคาร/i;
 function roomsHit(a,b){
   if(!a||!b||/ระบุภายหลัง/.test(a)||/ระบุภายหลัง/.test(b)) return false;
   if(SHARED_ROOM.test(a)||SHARED_ROOM.test(b)) return false;
