@@ -63,3 +63,11 @@
 - ใบ 3/11 บ.เซ็นทรัล พีเพิล ดีเวลลอปเมนท์ เซ็นเตอร์ (Team building Asset Group 4) · 3 พ.ย. 2569 · Rainbow Hall + Crystal Grill ชั้น 82 · 104 ท่าน
 - รูป BEO / โปสเตอร์ / โลโก้ อยู่ใน `img/20261103/`, `img/20261105/`, `img/20261106/` · นำเข้าครั้งเดียว (marker `import_20261103_batch`)
 - ตรวจห้องชน: นับ Bangkok Balcony / Bangkok Sky เป็นห้องอาหาร (ไม่นับห้องชน)
+
+## Import — 4/5/9/10/16 Nov 2026 (`js/import-20261104-cpn.js`) · Baiyoke Sky · Central Pattana Team building
+- ใบ 4/11 Asset Group 5 · 4 พ.ย. 2569 · Rainbow Hall + Crystal Grill ชั้น 82 · 109 ท่าน set up 110
+- ใบ 5/11 Asset Group 5 · 5 พ.ย. 2569 · 109 ท่าน set up 110
+- ใบ 6/11 Asset Group 4 · 9 พ.ย. 2569 · 104 ท่าน set up 110
+- ใบ 7/11 Asset Group 5 · 10 พ.ย. 2569 · ใบแก้ไข 28 ต.ค. ลดการันตี 105 → 100 ท่าน (set up 110) · แนบ BEO ฉบับลงนาม
+- ใบ 8/11 Asset Group 5 · 16 พ.ย. 2569 · ใบแก้ไข 28 ต.ค. เพิ่มการันตี 106 → 127 ท่าน (set up 110 → 130)
+- รูป BEO / ใบแก้ไข / โปสเตอร์ อยู่ใน `img/20261104/` · นำเข้าครั้งเดียว (marker `import_20261104_cpn`)
